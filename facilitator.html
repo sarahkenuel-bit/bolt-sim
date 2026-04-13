@@ -109,10 +109,10 @@ main{padding:28px;max-width:1200px;margin:0 auto}
 
   <div class="section-title">Live leaderboard</div>
   <div class="tabs">
-    <div class="tab active" onclick="setView('overall')">Overall</div>
-    <div class="tab" onclick="setView('y1')">Year 1</div>
+    <div class="tab active" onclick="setView('y1')">Year 1</div>
     <div class="tab" onclick="setView('y2')">Year 2</div>
     <div class="tab" onclick="setView('y3')">Year 3</div>
+    <div class="tab" onclick="setView('overall')">Overall</div>
   </div>
   <div class="leaderboard" id="leaderboard-table">
     <div class="empty-state">No team scores loaded yet. Teams can submit via the sim, or enter manually below.</div>
@@ -148,7 +148,7 @@ const SHEET_READ_URL = 'https://script.google.com/macros/s/AKfycbz_D4H8Yn2jSF6Xt
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let teams = []; // always load fresh from sheet on page load
-let currentView = 'overall';
+let currentView = 'y1';
 
 function save(){localStorage.setItem('bolt_teams',JSON.stringify(teams))}
 function clearAndReload(){teams=[];localStorage.removeItem('bolt_teams');loadSheet();}
@@ -304,11 +304,15 @@ function renderCards(){
 }
 
 function renderWinner(){
-  if(!teams.length){document.getElementById('winner-banner').classList.remove('show');return}
-  const winner=teams.reduce((a,b)=>(b.overall||b.y3m||b.y2m||b.y1m||0)>(a.overall||a.y3m||a.y2m||a.y1m||0)?b:a,teams[0]);
-  document.getElementById('winner-banner').classList.add('show');
+  const banner=document.getElementById('winner-banner');
+  if(!teams.length){banner.classList.remove('show');return}
+  // Only reveal winner once at least one team has finished Year 3
+  const finishedTeams=teams.filter(t=>t.year>=3&&t.overall);
+  if(!finishedTeams.length){banner.classList.remove('show');return}
+  const winner=finishedTeams.reduce((a,b)=>b.overall>a.overall?b:a,finishedTeams[0]);
+  banner.classList.add('show');
   document.getElementById('winner-name').textContent=winner.team;
-  document.getElementById('winner-score').textContent=winner.overall?'Score: '+winner.overall+'/100':'Year '+winner.year+' in progress';
+  document.getElementById('winner-score').textContent='Score: '+winner.overall+'/100';
 }
 
 // Auto-refresh every 30 seconds if sheet configured
