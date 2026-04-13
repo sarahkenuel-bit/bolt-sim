@@ -9,9 +9,9 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --green:#1DB954;--bg:#0a0a0a;--surface:#111;--card:#1a1a1a;
-  --border:rgba(255,255,255,0.09);--text:#f0f0f0;--muted:#888;
-  --danger:#e05050;--warn:#f0a500;--info:#378add;
+  --green:#1DB954;--bg:#f7f7f5;--surface:#ffffff;--card:#f2f2f0;
+  --border:#e0e0dc;--text:#111111;--muted:#666666;
+  --danger:#d03030;--warn:#c97a00;--info:#1a5fa8;
   --fh:'Syne',sans-serif;--fm:'DM Mono',monospace;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--fh);min-height:100vh}
@@ -23,21 +23,21 @@ header{background:#000;border-bottom:2px solid var(--green);padding:16px 28px;di
 .refresh-btn:hover{background:rgba(29,185,84,.12)}
 .last-update{font-size:12px;font-family:var(--fm);color:var(--muted)}
 main{padding:28px;max-width:1200px;margin:0 auto}
-.section-title{font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--green);text-transform:uppercase;font-family:var(--fm);margin-bottom:16px}
+.section-title{font-size:11px;font-weight:600;letter-spacing:.18em;color:#0F6E56;text-transform:uppercase;font-family:var(--fm);margin-bottom:16px}
 
 /* leaderboard */
 .leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:32px}
-.lb-header{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;background:#0d0d0d;padding:10px 16px;border-bottom:1px solid var(--border)}
+.lb-header{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;background:#111111;padding:10px 16px;border-bottom:1px solid var(--border)}
 .lb-header div{font-size:11px;font-family:var(--fm);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
 .lb-row{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;padding:14px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s}
 .lb-row:last-child{border-bottom:none}
-.lb-row:hover{background:rgba(255,255,255,.02)}
-.lb-row.winner{background:rgba(29,185,84,.05);border-left:3px solid var(--green)}
+.lb-row:hover{background:rgba(0,0,0,.02)}
+.lb-row.winner{background:rgba(29,185,84,.06);border-left:3px solid var(--green)}
 .rank{font-size:18px;font-weight:800;color:var(--muted);font-family:var(--fm);text-align:center}
 .rank.gold{color:#f5c842}
 .rank.silver{color:#c0c0c0}
 .rank.bronze{color:#cd7f32}
-.team-name{font-size:16px;font-weight:700;color:#fff}
+.team-name{font-size:16px;font-weight:700;color:var(--text)}
 .team-sub{font-size:11px;font-family:var(--fm);color:var(--muted);margin-top:2px}
 .metric{text-align:center;font-family:var(--fm)}
 .metric .val{font-size:16px;font-weight:700}
@@ -53,27 +53,27 @@ main{padding:28px;max-width:1200px;margin:0 auto}
 
 /* score card grid */
 .team-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:32px}
-.team-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
-.tc-name{font-size:15px;font-weight:700;margin-bottom:12px;color:#fff}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.tc-name{font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text)}
 .tc-score-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
 .tc-score-row:last-child{border-bottom:none}
 .tc-label{font-size:11px;font-family:var(--fm);color:var(--muted)}
 .tc-val{font-size:14px;font-weight:700;font-family:var(--fm)}
 
 /* winner banner */
-.winner-banner{background:linear-gradient(135deg,#0d1a0f,#0a0a0a);border:2px solid var(--green);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:32px;display:none}
+.winner-banner{background:linear-gradient(135deg,#e8f8ee,#f7f7f5);border:2px solid var(--green);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:32px;display:none}
 .winner-banner.show{display:block}
-.wb-label{font-size:11px;letter-spacing:.2em;color:var(--green);font-family:var(--fm);text-transform:uppercase;margin-bottom:10px}
-.wb-team{font-size:36px;font-weight:800;color:#fff}
+.wb-label{font-size:11px;letter-spacing:.2em;color:var(--green-dim,#0F6E56);font-family:var(--fm);text-transform:uppercase;margin-bottom:10px}
+.wb-team{font-size:36px;font-weight:800;color:#111}
 .wb-score{font-size:16px;font-family:var(--fm);color:var(--green);margin-top:6px}
 .wb-emoji{font-size:48px;margin-bottom:10px}
 
 /* manual entry */
-.manual-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px}
+.manual-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px}
 .manual-box p{font-size:13px;font-family:var(--fm);color:var(--muted);margin-bottom:14px}
 .manual-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:end}
 .mfield label{font-size:11px;font-family:var(--fm);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;display:block}
-.mfield input{width:100%;background:#111;border:1px solid #333;border-radius:6px;padding:9px 11px;font-size:13px;font-family:var(--fm);color:#fff;outline:none;transition:border-color .15s}
+.mfield input{width:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:9px 11px;font-size:13px;font-family:var(--fm);color:#111;outline:none;transition:border-color .15s}
 .mfield input:focus{border-color:var(--green)}
 .add-btn{background:var(--green);color:#000;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;font-family:var(--fh);cursor:pointer;height:38px}
 .clear-btn{background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--fh);cursor:pointer}
@@ -96,10 +96,6 @@ main{padding:28px;max-width:1200px;margin:0 auto}
 </header>
 
 <main>
-  <div class="config-note">
-    <strong style="color:#fff">Setup:</strong> Paste your Google Apps Script URL into both <code>SHEET_WEBHOOK</code> in <code>index.html</code> and <code>SHEET_READ_URL</code> in <code>facilitator.html</code>. Teams can also enter scores manually below.
-  </div>
-
   <div id="winner-banner" class="winner-banner">
     <div class="wb-emoji">&#9889;</div>
     <div class="wb-label">Overall winner — Year 3</div>
@@ -123,7 +119,7 @@ main{padding:28px;max-width:1200px;margin:0 auto}
     <p>If teams can't auto-submit, enter their final scores here. Ask each team to read out their Year 3 market share, Rider NPS, Driver NPS, and overall score from their final scorecard screen.</p>
     <div class="manual-grid" style="grid-template-columns:1fr 80px 1fr 1fr 1fr 1fr auto">
       <div class="mfield"><label>Team name</label><input type="text" id="m-team" placeholder="Team Lagos"></div>
-      <div class="mfield"><label>Year</label><select id="m-yr" style="width:100%;background:#111;border:1px solid #333;border-radius:6px;padding:9px 8px;font-size:13px;font-family:var(--fm);color:#fff;outline:none"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select></div>
+      <div class="mfield"><label>Year</label><select id="m-yr" style="width:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:9px 8px;font-size:13px;font-family:var(--fm);color:#111;outline:none"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select></div>
       <div class="mfield"><label>Market %</label><input type="number" id="m-mkt" placeholder="42" min="0" max="99"></div>
       <div class="mfield"><label>Rider NPS</label><input type="number" id="m-nps" placeholder="67" min="0" max="99"></div>
       <div class="mfield"><label>Driver NPS</label><input type="number" id="m-drv" placeholder="62" min="0" max="99"></div>
@@ -236,7 +232,12 @@ function getYearData(t,yr){
   if(yr==='y1')return{m:t.y1m,n:t.y1n,d:t.y1d,sortVal:t.y1m||0};
   if(yr==='y2')return{m:t.y2m,n:t.y2n,d:t.y2d,sortVal:t.y2m||0};
   if(yr==='y3')return{m:t.y3m,n:t.y3n,d:t.y3d,sortVal:t.y3m||0};
-  return{m:t.y3m,n:t.y3n,d:t.y3d,sortVal:t.overall||t.y3m||0,overall:t.overall};
+  // Overall: use latest available year's data
+  const latestY=t.year||1;
+  const m=latestY>=3?t.y3m:latestY===2?t.y2m:t.y1m;
+  const n=latestY>=3?t.y3n:latestY===2?t.y2n:t.y1n;
+  const d=latestY>=3?t.y3d:latestY===2?t.y2d:t.y1d;
+  return{m,n,d,sortVal:t.overall||m||0,overall:t.overall};
 }
 
 function renderLeaderboard(){
@@ -284,12 +285,14 @@ function renderCards(){
   const el=document.getElementById('team-cards');
   if(!teams.length){el.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:13px">No teams yet.</div>';return}
   el.innerHTML=teams.map(t=>{
-   const oClass=t.overall>=65?'#1DB954':t.overall>=50?'#f0a500':'#e05050';
+   const yd=getYearData(t,'overall');
+   const oClass=t.overall>=65?'#1a8a3c':t.overall>=50?'#c97a00':'#d03030';
+   const mCol=yd.m>=42?'#1a8a3c':yd.m>=34?'#c97a00':'#d03030';
    return`<div class="team-card">
-    <div class="tc-name">${t.team}</div>
-    <div class="tc-score-row"><div class="tc-label">Market share</div><div class="tc-val" style="color:${t.y3m>=42?'#1DB954':t.y3m>=34?'#f0a500':'#e05050'}">${t.y3m||'—'}%</div></div>
-    <div class="tc-score-row"><div class="tc-label">Rider NPS</div><div class="tc-val" style="color:#f0a500">${t.y3n||'—'}</div></div>
-    <div class="tc-score-row"><div class="tc-label">Driver NPS</div><div class="tc-val" style="color:#378add">${t.y3d||'—'}</div></div>
+    <div class="tc-name">${t.team}<span style="font-size:11px;font-family:var(--fm);color:var(--muted);font-weight:400;margin-left:8px">Year ${t.year||1}</span></div>
+    <div class="tc-score-row"><div class="tc-label">Market share</div><div class="tc-val" style="color:${mCol}">${yd.m?yd.m+'%':'—'}</div></div>
+    <div class="tc-score-row"><div class="tc-label">Rider NPS</div><div class="tc-val" style="color:#c97a00">${yd.n||'—'}</div></div>
+    <div class="tc-score-row"><div class="tc-label">Driver NPS</div><div class="tc-val" style="color:#1a5fa8">${yd.d||'—'}</div></div>
     <div class="tc-score-row"><div class="tc-label">Overall score</div><div class="tc-val" style="color:${oClass};font-size:18px">${t.overall||'—'}</div></div>
    </div>`
   }).join('');
