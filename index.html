@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolt: The Next Ride — Leadership Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1DB954;--green-dim:#0F6E56;--green-pale:#e6f9ee;
+  --bg:#f7f7f5;--surface:#ffffff;--card:#ffffff;--card2:#f2f2f0;
+  --border:#e0e0dc;--border-strong:#c8c8c4;
+  --text:#111;--muted:#666;--muted2:#999;
+  --danger:#d03030;--warn:#c97a00;--info:#1a5fa8;
+  --fh:'Inter',sans-serif;--fm:'IBM Plex Mono',monospace;
+  --r8:8px;--r12:12px;--r16:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fh);min-height:100vh}
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.active{display:flex}
+
+/* ── INTRO ── */
+.hero{background:#000;padding:56px 32px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--green)}
+.wm{font-size:11px;font-weight:500;letter-spacing:.25em;color:var(--green);text-transform:uppercase;margin-bottom:18px;font-family:var(--fm)}
+.htitle{font-size:clamp(36px,7vw,60px);font-weight:900;line-height:1;color:#fff;margin-bottom:10px}
+.htitle span{color:var(--green)}
+.hsub{font-size:14px;color:#999;margin-bottom:36px;font-family:var(--fm)}
+.team-entry{background:#1e1e1e;border:1px solid #333;border-radius:var(--r12);padding:24px;max-width:380px;margin:0 auto 28px;text-align:left}
+.team-entry label{display:block;font-size:11px;letter-spacing:.15em;color:var(--green);font-family:var(--fm);text-transform:uppercase;margin-bottom:10px}
+.team-input{width:100%;background:#111;border:1px solid #444;border-radius:var(--r8);padding:12px 14px;font-size:16px;font-weight:700;font-family:var(--fh);color:#fff;outline:none;transition:border-color .15s}
+.team-input:focus{border-color:var(--green)}
+.team-input::placeholder{color:#555;font-weight:400}
+.stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin-bottom:36px}
+.stp{text-align:center}
+.stp .n{font-size:20px;font-weight:800;color:var(--green)}
+.stp .l{font-size:11px;color:#777;font-family:var(--fm);margin-top:2px}
+.btnp{background:var(--green);color:#000;border:none;border-radius:100px;padding:14px 28px;font-size:15px;font-weight:700;font-family:var(--fh);cursor:pointer;width:100%;letter-spacing:.02em;transition:opacity .15s}
+.btnp:hover{opacity:.88}
+.btnp:disabled{opacity:.4;cursor:not-allowed}
+.btns{background:transparent;color:var(--text);border:1.5px solid var(--border-strong);border-radius:100px;padding:11px 22px;font-size:14px;font-weight:600;font-family:var(--fh);cursor:pointer;transition:background .15s}
+.btns:hover{background:var(--card2)}
+.btng{background:transparent;color:var(--green);border:1.5px solid var(--green);border-radius:100px;padding:11px 22px;font-size:14px;font-weight:600;font-family:var(--fh);cursor:pointer;transition:background .15s}
+.btng:hover{background:var(--green-pale)}
+
+/* ── BRIEFING ── */
+.page-header{background:var(--surface);border-bottom:2px solid var(--green);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:10}
+.badge-green{background:var(--green);color:#000;font-size:11px;font-weight:700;font-family:var(--fm);padding:4px 12px;border-radius:100px;letter-spacing:.08em}
+.badge-gray{background:var(--card2);color:var(--muted);font-size:11px;font-weight:600;font-family:var(--fm);padding:4px 10px;border-radius:4px;border:1px solid var(--border)}
+.body-pad{padding:28px 24px;display:flex;flex-direction:column;gap:20px;max-width:800px;margin:0 auto;width:100%}
+.stitle{font-size:11px;font-weight:600;letter-spacing:.15em;color:var(--green);text-transform:uppercase;font-family:var(--fm);margin-bottom:10px}
+.bcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:20px}
+.bcard p{font-size:14px;color:var(--text);line-height:1.75;font-family:var(--fm)}
+.ogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.oi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r8);padding:14px;display:flex;align-items:flex-start;gap:10px}
+.od{width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:5px;flex-shrink:0}
+.oi p{font-size:13px;color:var(--text);line-height:1.5;font-family:var(--fm)}
+.rtrack{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);overflow:hidden}
+.rs{flex:1;padding:16px 12px;text-align:center;border-right:1px solid var(--border)}
+.rs:last-child{border-right:none}
+.rs .ry{font-size:11px;color:var(--green);font-family:var(--fm);margin-bottom:4px;font-weight:500}
+.rs .rt{font-size:14px;font-weight:700;color:var(--text)}
+.rs .rth{font-size:11px;color:var(--muted);font-family:var(--fm);margin-top:3px}
+.sleg{display:flex;gap:10px;flex-wrap:wrap}
+.sp{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-family:var(--fm);color:var(--text)}
+.sd{width:8px;height:8px;border-radius:50%}
+
+/* ── ROUND TOPBAR ── */
+.topbar{background:#0d0d0d;border-bottom:3px solid var(--green);padding:0 24px;display:flex;align-items:stretch;justify-content:space-between;flex-wrap:wrap;gap:0;position:sticky;top:0;z-index:10}
+.topbar-left{display:flex;align-items:center;gap:12px;padding:14px 0}
+.topbar-right{display:flex;align-items:center;gap:0}
+.stat-chip{display:flex;flex-direction:column;align-items:center;padding:10px 16px;border-left:1px solid #2a2a2a}
+.stat-chip .sc-l{font-size:10px;color:#777;font-family:var(--fm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.stat-chip .sc-v{font-size:14px;font-weight:700;color:#fff;font-family:var(--fm)}
+.stat-chip .sc-v.good{color:var(--green)}
+.stat-chip .sc-v.warn{color:#f0a500}
+.stat-chip .sc-v.bad{color:#e05050}
+.team-chip{font-size:12px;font-weight:700;color:var(--green);font-family:var(--fm);background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:4px 10px}
+
+/* ── ROUND BODY ── */
+.round-body{padding:20px 24px;display:flex;flex-direction:column;gap:20px;max-width:800px;margin:0 auto;width:100%;flex:1}
+.scard{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--warn);border-radius:0 var(--r12) var(--r12) 0;padding:18px}
+.scard.info{border-left-color:var(--info)}
+.scard.danger{border-left-color:var(--danger)}
+.stag{font-size:10px;font-family:var(--fm);letter-spacing:.18em;color:var(--warn);text-transform:uppercase;margin-bottom:7px;font-weight:600}
+.stag.info{color:var(--info)}
+.stag.danger{color:var(--danger)}
+.sh{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.3}
+.sb2{font-size:13px;color:var(--muted);line-height:1.7;font-family:var(--fm)}
+.section-head{font-size:11px;font-weight:600;letter-spacing:.15em;color:var(--green);text-transform:uppercase;font-family:var(--fm)}
+
+/* ── BUDGET ── */
+.budget-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:18px}
+.budget-summary{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.budget-total{font-size:22px;font-weight:800;color:var(--text)}
+.budget-total span{color:var(--green)}
+.budget-avail{font-size:13px;font-family:var(--fm);color:var(--muted)}
+.budget-avail.over{color:var(--danger);font-weight:600}
+.budget-avail.exact{color:var(--green);font-weight:600}
+.bbar{background:var(--card2);border-radius:6px;padding:3px;display:flex;gap:2px;margin-bottom:16px;height:26px;align-items:stretch;overflow:hidden}
+.bseg{border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;font-family:var(--fm);min-width:0;overflow:hidden;white-space:nowrap;transition:flex .25s;color:#000}
+.arows{display:flex;flex-direction:column;gap:10px}
+.ar{display:flex;align-items:center;gap:10px}
+.al{font-size:12px;color:var(--text);width:170px;flex-shrink:0;font-family:var(--fm);line-height:1.3}
+.aslider{flex:1;accent-color:var(--green);cursor:pointer}
+.av{font-size:13px;font-family:var(--fm);font-weight:700;color:var(--green);width:48px;text-align:right}
+
+/* ── PRIORITIES ── */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r12);padding:14px;cursor:pointer;transition:border-color .15s,background .15s;user-select:none;position:relative}
+.pc.sel{border-color:var(--green);background:var(--green-pale)}
+.pc .pt{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;padding-right:22px}
+.pc .pd{font-size:11px;color:var(--muted);line-height:1.4;font-family:var(--fm)}
+.pc .pcost{font-size:11px;font-family:var(--fm);font-weight:600;margin-top:6px}
+.pc .pcost.affordable{color:var(--green)}
+.pc .pcost.costly{color:var(--warn)}
+.pc .pcost.toopoor{color:var(--danger)}
+.pck{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-strong);display:flex;align-items:center;justify-content:center;position:absolute;top:12px;right:12px;font-size:10px;color:transparent;transition:all .15s;flex-shrink:0}
+.pc.sel .pck{background:var(--green);border-color:var(--green);color:#000}
+
+/* ── TEAM CHOICES ── */
+.tgrid{display:flex;flex-direction:column;gap:8px}
+.tc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r12);padding:14px 16px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;align-items:flex-start;gap:12px}
+.tc.sel{border-color:var(--green);background:var(--green-pale)}
+.tc .tt{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.tc .td{font-size:11px;color:var(--muted);font-family:var(--fm);line-height:1.4}
+.tc .tcost{font-size:11px;font-family:var(--fm);font-weight:600;margin-top:4px;color:var(--warn)}
+.trad{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-strong);margin-top:2px;flex-shrink:0;transition:all .15s}
+.tc.sel .trad{background:var(--green);border-color:var(--green)}
+
+/* ── SUBMIT ── */
+.submit-area{padding:0 24px 28px;max-width:800px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:8px}
+.errmsg{font-size:12px;font-family:var(--fm);color:var(--danger);text-align:center;min-height:18px;font-weight:600}
+
+/* ── RESULTS ── */
+.res-header{background:#000;border-bottom:3px solid var(--green);padding:28px 24px;text-align:center}
+.res-tag{font-size:11px;font-family:var(--fm);letter-spacing:.18em;color:var(--green);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+.res-title{font-size:26px;font-weight:800;color:#fff}
+.res-team{font-size:13px;color:#888;font-family:var(--fm);margin-top:4px}
+.ocgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.oc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:14px;text-align:center}
+.ocl{font-size:11px;color:var(--muted);font-family:var(--fm);margin-bottom:6px;font-weight:500}
+.ocv{font-size:22px;font-weight:800}
+.ocv.good{color:#1a8a3c}
+.ocv.warn{color:var(--warn)}
+.ocv.bad{color:var(--danger)}
+.ocd{font-size:11px;font-family:var(--fm);color:var(--muted2);margin-top:3px}
+.clist{display:flex;flex-direction:column;gap:8px}
+.ci{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--surface);border-radius:var(--r8);border:1px solid var(--border)}
+.cii{font-size:14px;flex-shrink:0;margin-top:1px}
+.cit{font-size:13px;color:var(--text);font-family:var(--fm);line-height:1.55}
+.ract{padding:0 24px 28px;max-width:800px;margin:0 auto;width:100%;display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── FINAL ── */
+.final-wrap{padding:32px 24px;display:flex;flex-direction:column;align-items:center;gap:20px;max-width:720px;margin:0 auto;width:100%}
+.fbadge{width:80px;height:80px;border-radius:50%;border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--green-pale)}
+.ftitle{font-size:26px;font-weight:800;color:var(--text);text-align:center}
+.fsub{font-size:14px;color:var(--muted);font-family:var(--fm);text-align:center}
+.fscores{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:20px;display:flex;flex-direction:column;gap:14px}
+.fsr{display:flex;align-items:center;gap:12px}
+.fsl{font-size:13px;color:var(--text);font-family:var(--fm);width:160px;flex-shrink:0}
+.fsbt{flex:1;height:8px;background:var(--card2);border-radius:4px;overflow:hidden}
+.fsbf{height:100%;border-radius:4px;background:var(--green);transition:width .8s ease}
+.fsv{font-size:13px;font-family:var(--fm);font-weight:700;width:40px;text-align:right}
+.dlist{width:100%;display:flex;flex-direction:column;gap:8px}
+.di{background:var(--surface);border:1px solid var(--border);border-radius:var(--r8);padding:12px 15px;font-size:13px;color:var(--text);font-family:var(--fm);line-height:1.6}
+
+/* ── PRINCIPLES ── */
+.principles-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.principle-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r8);padding:12px 14px}
+.principle-name{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-family:var(--fm)}
+.principle-bar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.principle-fill{height:100%;border-radius:3px;transition:width .7s ease}
+.principle-score{font-size:12px;font-family:var(--fm);color:var(--muted)}
+
+/* ── SUBMIT-TO-SHEET ── */
+.submit-sheet-box{background:var(--green-pale);border:1.5px solid var(--green);border-radius:var(--r12);padding:16px 18px;width:100%}
+.submit-sheet-box p{font-size:13px;font-family:var(--fm);color:var(--text);line-height:1.6;margin-bottom:10px}
+.code-box{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:var(--fm);font-size:13px;font-weight:700;color:var(--text);word-break:break-all;margin-bottom:10px;letter-spacing:.05em}
+
+.divider{height:1px;background:var(--border);width:100%}
+.section-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ INTRO -->
+<div id="s-intro" class="screen active">
+  <div class="hero">
+    <div style="margin-bottom:20px;display:flex;justify-content:center;align-items:center;gap:10px">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="8" fill="#1DB954"/>
+        <path d="M21 7L12 20h7l-4 9 13-15h-8l4-7z" fill="#000"/>
+      </svg>
+      <span style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.02em;font-family:'Inter',sans-serif">bolt</span>
+    </div>
+
+    <div class="htitle">The Next<br><span>Ride</span></div>
+    <div class="hsub">A 3-year strategic simulation for high-performing teams</div>
+    <div class="stats">
+      <div class="stp"><div class="n">50+</div><div class="l">Countries</div></div>
+      <div class="stp"><div class="n">600+</div><div class="l">Cities</div></div>
+      <div class="stp"><div class="n">80%+</div><div class="l">Revenue from Rides</div></div>
+      <div class="stp"><div class="n">3</div><div class="l">Rounds</div></div>
+    </div>
+    <div class="team-entry">
+      <label>Enter your team name to begin</label>
+      <input class="team-input" id="team-name-input" type="text" placeholder="e.g. Team Lagos" maxlength="30" oninput="checkTeamName()">
+    </div>
+    <button class="btnp" id="start-btn" style="max-width:280px;margin:0 auto;display:block" onclick="beginSim()" disabled>Start simulation</button>
+    <div style="margin-top:16px;text-align:center">
+      <a href="facilitator.html" style="font-size:12px;color:#555;font-family:'DM Mono',monospace;text-decoration:none;border-bottom:1px solid #444;padding-bottom:1px">Facilitator view →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ BRIEFING -->
+<div id="s-brief" class="screen">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="6" fill="#1DB954"/>
+        <path d="M21 7L12 20h7l-4 9 13-15h-8l4-7z" fill="#000"/>
+      </svg>
+      <div style="font-size:15px;font-weight:700">Mission briefing</div>
+    </div>
+    <div class="badge-green" id="brief-team-badge">Team</div>
+  </div>
+  <div class="body-pad">
+    <div><div class="stitle">Your role</div>
+      <div class="bcard"><p>You are the newly assembled Rides Leadership Team at Bolt HQ, Tallinn. You have collective responsibility for the global Rides business — Bolt's largest and most strategically critical vertical, representing over 80% of company revenue. Over the next three simulated years, your team will navigate competitive pressure, supply-demand imbalances, regulatory headwinds, and growth opportunities across 50+ countries. Every decision in one round has consequences in the next.</p></div>
+    </div>
+    <div><div class="stitle">Starting position — Year 1</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div class="oc"><div class="ocl">Global market share</div><div class="ocv" style="color:var(--info)">34%</div><div class="ocd">vs Uber 41%</div></div>
+        <div class="oc"><div class="ocl">Total staff (Rides)</div><div class="ocv" style="color:var(--text)">500</div><div class="ocd">across 50+ countries</div></div>
+        <div class="oc"><div class="ocl">Rider NPS</div><div class="ocv" style="color:var(--warn)">54</div><div class="ocd">industry avg: 58</div></div>
+        <div class="oc"><div class="ocl">Driver NPS</div><div class="ocv" style="color:var(--warn)">49</div><div class="ocd">industry avg: 55</div></div>
+      </div>
+    </div>
+    <div><div class="stitle">What you're optimising for</div>
+      <div class="sleg">
+        <div class="sp"><div class="sd" style="background:var(--info)"></div>Market share</div>
+        <div class="sp"><div class="sd" style="background:var(--green)"></div>Rider NPS</div>
+        <div class="sp"><div class="sd" style="background:#f0a500"></div>Driver NPS</div>
+        <div class="sp"><div class="sd" style="background:#9b59b6"></div>Operating principles</div>
+      </div>
+    </div>
+    <div><div class="stitle">Bolt operating principles</div>
+      <div class="ogrid">
+        <div class="oi"><div class="od"></div><p><strong>Get it done</strong> — bias for action over analysis paralysis</p></div>
+        <div class="oi"><div class="od"></div><p><strong>Set the standard</strong> — hold the bar high on quality and execution</p></div>
+        <div class="oi"><div class="od"></div><p><strong>Customer first</strong> — rider and driver experience drives every call</p></div>
+        <div class="oi"><div class="od"></div><p><strong>More with less</strong> — capital efficiency; don't burn budget to solve problems</p></div>
+        <div class="oi"><div class="od"></div><p><strong>Find the truth</strong> — use data, not instinct, to make decisions</p></div>
+      </div>
+    </div>
+    <div><div class="stitle">The 3-year journey</div>
+      <div class="rtrack">
+        <div class="rs"><div class="ry">Year 1</div><div class="rt">Foundations</div><div class="rth">Stabilise & invest</div></div>
+        <div class="rs"><div class="ry">Year 2</div><div class="rt">Pressure test</div><div class="rth">Compete & adapt</div></div>
+        <div class="rs"><div class="ry">Year 3</div><div class="rt">Scale</div><div class="rth">Accelerate & lead</div></div>
+      </div>
+    </div>
+    <button class="btnp" onclick="startRound(1)">Begin Year 1</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ ROUND -->
+<div id="s-round" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <rect width="36" height="36" rx="6" fill="#1DB954"/>
+        <path d="M21 7L12 20h7l-4 9 13-15h-8l4-7z" fill="#000"/>
+      </svg>
+      <div class="badge-green" id="rh-b">Year 1</div>
+      <div style="font-size:15px;font-weight:700;color:#fff" id="rh-t">Foundations</div>
+      <div class="team-chip" id="rh-team">—</div>
+    </div>
+    <div class="topbar-right">
+      <div class="stat-chip"><div class="sc-l">Market share</div><div class="sc-v" id="sc-m">34%</div></div>
+      <div class="stat-chip"><div class="sc-l">Rider NPS</div><div class="sc-v" id="sc-n">54</div></div>
+      <div class="stat-chip"><div class="sc-l">Driver NPS</div><div class="sc-v" id="sc-d">49</div></div>
+      <div class="stat-chip"><div class="sc-l">Staff</div><div class="sc-v" id="sc-s">500</div></div>
+      <div class="stat-chip"><div class="sc-l">Budget</div><div class="sc-v good" id="sc-budget">€20M</div></div>
+    </div>
+  </div>
+  <div class="round-body">
+    <div class="scard" id="scard">
+      <div class="stag" id="stag">Situation</div>
+      <div class="sh" id="sh">—</div>
+      <div class="sb2" id="sb2">—</div>
+    </div>
+
+    <div>
+      <div class="section-row" style="margin-bottom:10px">
+        <div class="section-head">Strategic priorities — choose 2</div>
+        <div style="font-size:12px;font-family:var(--fm);color:var(--muted)">Each priority has a cost that reduces your available budget</div>
+      </div>
+      <div class="pgrid" id="pgrid"></div>
+    </div>
+
+    <div>
+      <div class="section-head" style="margin-bottom:10px">Team & culture decision</div>
+      <div class="tgrid" id="tgrid"></div>
+    </div>
+
+    <div class="budget-box">
+      <div class="budget-summary">
+        <div>
+          <div class="section-head">Budget allocation</div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--fm);margin-top:3px">Allocate what remains after priorities &amp; team costs</div>
+          <div class="budget-avail" id="brem-inline" style="margin-top:4px">€0M of €20M allocated — €20M remaining</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--muted);font-family:var(--fm);margin-bottom:2px">Total committed</div>
+          <div class="budget-total"><span id="btotal">€0M</span> <span style="color:var(--muted);font-size:16px">/ <span id="bmax-label">€20M</span></span></div>
+        </div>
+      </div>
+      <div class="bbar" id="bbar"></div>
+      <div class="arows" id="arows"></div>
+    </div>
+  </div>
+  <div class="submit-area">
+    <div class="errmsg" id="errmsg"></div>
+    <button class="btnp" onclick="submitRound()">Confirm team decisions →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ RESULTS -->
+<div id="s-results" class="screen">
+  <div class="res-header">
+    <div style="display:flex;justify-content:center;margin-bottom:14px">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="8" fill="#1DB954"/>
+        <path d="M21 7L12 20h7l-4 9 13-15h-8l4-7z" fill="#000"/>
+      </svg>
+    </div>
+    <div class="res-tag" id="res-tag">Year 1 results</div>
+    <div class="res-title" id="res-title">Year in review</div>
+    <div class="res-team" id="res-team-label">Team —</div>
+  </div>
+  <div class="body-pad">
+    <div class="ocgrid" id="ocgrid"></div>
+    <div><div class="stitle" style="margin-bottom:10px">What happened</div><div class="clist" id="clist"></div></div>
+    <div class="submit-sheet-box" id="yr-submit-box">
+      <p>Submit your Year <span id="yr-submit-label">1</span> scores to the facilitator leaderboard before the debrief.</p>
+      <button class="btng" onclick="submitYearToSheet()" id="yr-sheet-btn" style="width:100%">Submit Year 1 scores to leaderboard →</button>
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:8px;text-align:center" id="yr-sheet-status"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="ract">
+      <button class="btnp" id="nxtbtn" style="flex:1">Continue to Year 2 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ FINAL -->
+<div id="s-final" class="screen">
+  <div class="res-header">
+    <div class="res-tag">Simulation complete</div>
+    <div class="res-title" id="ftitle">Strong leadership</div>
+    <div class="res-team" id="final-team-label">Team —</div>
+  </div>
+  <div class="final-wrap">
+    <div class="fbadge" id="fbadge">&#9889;</div>
+    <div class="fsub" id="fsub">Overall score: 0/100 across 3 years</div>
+
+    <div style="width:100%"><div class="stitle" style="margin-bottom:10px">3-year scorecard</div>
+      <div class="fscores" id="fscores"></div>
+    </div>
+
+    <div style="width:100%"><div class="stitle" style="margin-bottom:10px">Operating principles — how you led</div>
+      <div class="principles-grid" id="principles-grid"></div>
+    </div>
+
+
+    <div class="submit-sheet-box" id="sheet-submit-box">
+      <p>Submit your team's score to the facilitator leaderboard. Share this code with your facilitator, or click Submit if you have network access.</p>
+      <div class="code-box" id="score-code">Loading...</div>
+      <button class="btng" onclick="submitToSheet()" id="sheet-btn" style="width:100%">Submit score to leaderboard →</button>
+      <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:8px;text-align:center" id="sheet-status"></div>
+    </div>
+
+    <button class="btns" onclick="reset()" style="width:100%">Run simulation again</button>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// Paste your Google Apps Script Web App URL here after setup:
+const SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbz_D4H8Yn2jSF6XtFNutZ7FNwgsJeNdQ3rWegzOYzZVqXboGagwQVS594qH5L_IUuVu7g/exec';
+
+// ─── GAME DATA ────────────────────────────────────────────────────────────────
+const PRINCIPLES = ['Get it done','Set the standard','Customer first','More with less','Find the truth'];
+const PRINCIPLE_COLORS = ['#1DB954','#378add','#f0a500','#9b59b6','#e05050'];
+
+const RD = [
+ {year:1,badge:'Year 1',title:'Foundations',baseBudget:20,
+  scenario:{type:'warning',tag:'Market intelligence',
+   h:'Driver supply is thinning in your highest-revenue markets',
+   b:'Internal data shows driver churn has risen 18% YoY in South East Asia and Eastern Europe — two of your fastest-growing Rides regions. Uber has quietly increased driver incentives in Bangkok and Jakarta. Rider wait times are creeping up. This is Year 1: invest now or patch problems later at far greater cost.'},
+  budget:[
+   {id:'di',label:'Driver incentives & earnings',color:'#1DB954'},
+   {id:'tp',label:'Tech & platform reliability',color:'#378add'},
+   {id:'re',label:'Rider experience & growth',color:'#f0a500'},
+   {id:'nm',label:'New market expansion',color:'#9b59b6'},
+   {id:'oh',label:'Ops headcount & training',color:'#e07050'}
+  ],
+  priorities:[
+   {id:'sf',title:'Fix driver supply first',desc:'Laser-focus on churn reduction in top 5 markets before expanding.',cost:6,
+    principles:[2,0,0,2,1]},
+   {id:'ad',title:'Double down on South East Asia',desc:'SEA is growing fastest — accelerate investment while the lead is strong.',cost:8,
+    principles:[1,1,0,0,1]},
+   {id:'ee',title:'Lock in Eastern Europe',desc:'Defend 30% Poland growth; build moat before Uber responds.',cost:6,
+    principles:[1,2,0,0,1]},
+   {id:'pt',title:'Launch Bolt Lux',desc:'Premium tier in top cities to improve margins and Rider NPS.',cost:7,
+    principles:[1,2,2,1,0]}
+  ],
+  team:[
+   {id:'hl',title:'Hire local ops leads in each region',desc:'Slower to hire but deeply contextual market knowledge.',cost:5,
+    principles:[0,2,2,0,1]},
+   {id:'ct',title:'Centralise ops from Tallinn',desc:'Fast, consistent execution — risks missing local nuance.',cost:2,
+    principles:[2,1,0,2,0]},
+   {id:'hb',title:'Hybrid model with regional pods',desc:'Balance of speed and local knowledge; requires strong comms.',cost:4,
+    principles:[1,2,1,1,1]}
+  ]},
+
+ {year:2,badge:'Year 2',title:'Pressure test',baseBudget:20,
+  scenario:{type:'danger',tag:'Competitive threat',
+   h:"Uber launches 0% commission campaigns in Thailand and Germany",
+   b:"Uber is burning cash to disrupt two strategically critical markets. In Thailand, they're targeting your Bangkok driver base with zero commission for 60 days. Simultaneously in Germany, they've slashed prices to undercut Bolt in Berlin and Munich. Your Year 1 investments are now being directly tested on two fronts. How does your team respond without starting a race to the bottom?"},
+  budget:[
+   {id:'dr',label:'Driver counter-response',color:'#1DB954'},
+   {id:'tp',label:'Tech & product differentiation',color:'#378add'},
+   {id:'rl',label:'Rider loyalty programmes',color:'#f0a500'},
+   {id:'nm',label:'Markets outside conflict zones',color:'#9b59b6'},
+   {id:'pc',label:'Driver comms & community',color:'#e07050'}
+  ],
+  priorities:[
+   {id:'lp',title:'Compete on loyalty not price',desc:"Bolt benefits, insurance, and tools that 0% commission can't replicate.",cost:7,
+    principles:[0,2,2,1,1]},
+   {id:'mp',title:'Partial commission reduction',desc:'Reduce to 12% in affected cities — defend without full margin hit.',cost:5,
+    principles:[1,1,1,1,0]},
+   {id:'xe',title:'Expand in uncontested markets',desc:'Redirect energy to Belgium, Norway, Azerbaijan where Bolt is winning.',cost:8,
+    principles:[2,1,0,0,1]},
+   {id:'ev',title:'Accelerate EV programme in SEA',desc:'Nairobi and Bangkok EV traction gives Bolt a cost edge competitors lack.',cost:7,
+    principles:[1,2,2,1,2]}
+  ],
+  team:[
+   {id:'el',title:'Empower regional leads to respond fast',desc:'Give local teams authority to match offers within guardrails.',cost:3,
+    principles:[2,1,1,1,0]},
+   {id:'ch',title:'Crisis response from HQ',desc:'Consistent, controlled narrative but slower to market.',cost:2,
+    principles:[1,2,0,2,1]},
+   {id:'dc',title:'Form a driver advisory council',desc:'Involve top drivers in response planning — builds trust, takes time.',cost:4,
+    principles:[0,2,2,1,2]}
+  ]},
+
+ {year:3,badge:'Year 3',title:'Scale',baseBudget:20,
+  scenario:{type:'info',tag:'Growth opportunity',
+   h:"Belgium, Norway and Azerbaijan are surging — but you're under-resourced",
+   b:"Your fastest-growing markets (Belgium +132%, Norway +100%, Azerbaijan +82%) are outpacing your operational capacity. Meanwhile London and Berlin are showing strong unit economics but need platform investment to hold position. You have one budget cycle left. This is your chance to cement Bolt's multi-regional leadership — or leave it to chance."},
+  budget:[
+   {id:'gm',label:'Growth market resourcing',color:'#1DB954'},
+   {id:'lb',label:'London & Berlin platform',color:'#378add'},
+   {id:'rx',label:'Global rider experience',color:'#f0a500'},
+   {id:'da',label:'Data & demand forecasting',color:'#9b59b6'},
+   {id:'ld',label:'Leadership pipeline & L&D',color:'#e07050'}
+  ],
+  priorities:[
+   {id:'ag',title:'All-in on growth markets',desc:'Fully resource Belgium, Norway, Azerbaijan — win while window is open.',cost:10,
+    principles:[2,1,0,0,1]},
+   {id:'bp',title:'Balanced global portfolio',desc:'Grow fast markets while protecting profitable established markets.',cost:7,
+    principles:[1,2,1,1,1]},
+   {id:'ll',title:'Invest in leadership depth',desc:"Build the internal bench that will drive Bolt's next decade of growth.",cost:6,
+    principles:[0,2,1,1,2]},
+   {id:'dl',title:'Make every decision data-first',desc:'Upgrade forecasting and analytics to stop reacting and anticipating.',cost:7,
+    principles:[1,2,1,1,2]}
+  ],
+  team:[
+   {id:'pw',title:'Promote high-performers from within',desc:'Rewards loyalty and maintains culture — risk: capability gaps.',cost:3,
+    principles:[1,2,1,2,0]},
+   {id:'eh',title:'Bring in external operators',desc:'Scale-up experience from outside — risk: culture dilution.',cost:5,
+    principles:[2,1,0,0,1]},
+   {id:'oa',title:'Launch a Bolt Ops Academy',desc:'Long-term pipeline investment — slower payoff but compounds.',cost:6,
+    principles:[0,2,2,1,2]}
+  ]}
+];
+
+// ─── OUTCOME CALCULATORS ──────────────────────────────────────────────────────
+const CALC = [
+ {
+  outcomes:(s,prev)=>{
+   let m=prev.m,n=prev.n,d=prev.d,staff=prev.staff;
+   const di=s.alloc.di||0;
+   if(di>=12){d+=9;m+=3}else if(di>=8){d+=4;m+=1}else{d-=7;m-=4}
+   const tp=s.alloc.tp||0;
+   if(tp>=8){n+=4}else if(tp<=3){n-=3}
+   if(s.pri.includes('sf')){d+=7;n+=4}
+   if(s.pri.includes('ad')){m+=8;staff+=80}
+   if(s.pri.includes('ee')){m+=5;staff+=40}
+   if(s.pri.includes('pt')){n+=6;m+=2}
+   if(s.team==='hl'){d+=5;n+=3;staff+=120}
+   if(s.team==='ct'){m+=2;d-=4;staff+=30}
+   if(s.team==='hb'){d+=2;n+=2;staff+=70}
+   return[
+    {l:'Market share',v:clip(m)+'%',raw:clip(m),d:showDelta(m,prev.m),c:m>=36?'good':m>=32?'warn':'bad'},
+    {l:'Rider NPS',v:''+clip(n),raw:clip(n),d:showDelta(n,prev.n),c:n>=58?'good':n>=50?'warn':'bad'},
+    {l:'Driver NPS',v:''+clip(d),raw:clip(d),d:showDelta(d,prev.d),c:d>=52?'good':d>=44?'warn':'bad'},
+    {l:'Staff',v:staff.toLocaleString(),raw:staff,d:'+'+(staff-prev.staff),c:'good'}
+   ]
+  },
+  cons:(s,prev)=>{
+   const di=s.alloc.di||0;const r=[];
+   r.push(di>=12
+    ?{i:'✓',t:"Driver churn stabilised in South East Asia and Eastern Europe. Uber's recruitment push had limited impact on your fleet."}
+    :{i:'!',t:"Driver churn continued in Bangkok and Warsaw. Uber quietly onboarded 900+ drivers across your top markets in Q3."});
+   if(s.pri.includes('ad'))r.push({i:'✓',t:'South East Asia market share grew 8pts. Bangkok now Bolt\'s #1 revenue city in the region.'});
+   if(s.pri.includes('ee'))r.push({i:'✓',t:'Poland grew 34% YoY. Bolt cemented #1 position in Warsaw, Krakow, and Gdansk.'});
+   if(s.pri.includes('pt'))r.push({i:'✓',t:'Bolt Lux launched in 6 cities. Premium tier improved average revenue per ride by 22% in pilot cities.'});
+   if(s.team==='hl')r.push({i:'✓',t:'Local ops hires across SEA and CEE improved response time to market shifts by 40%.'});
+   if(s.team==='ct')r.push({i:'!',t:'Tallinn-centralised ops struggled to react to local driver concerns — trust gap emerging in regional markets.'});
+   r.push({i:'→',t:'Heading into Year 2: Uber is intensifying efforts on two fronts. Your Year 1 choices now define your defensive position.'});
+   return r
+  },
+  principleScore:(s)=>{
+   let p=[0,0,0,0,0];
+   const addPri=(pid)=>{const pri=RD[0].priorities.find(x=>x.id===pid);if(pri)pri.principles.forEach((v,i)=>p[i]+=v)};
+   const addTeam=(tid)=>{const t=RD[0].team.find(x=>x.id===tid);if(t)t.principles.forEach((v,i)=>p[i]+=v)};
+   s.pri.forEach(addPri);addTeam(s.team);
+   const di=s.alloc.di||0;
+   if(di>=12){p[2]+=2;p[0]+=1}else if(di<=5){p[3]+=2;p[2]-=1}
+   return p.map(v=>Math.min(Math.max(v,0),6))
+  }
+ },
+ {
+  outcomes:(s,prev)=>{
+   let m=prev.m,n=prev.n,d=prev.d,staff=prev.staff;
+   const dr=s.alloc.dr||0;
+   if(dr>=14){d+=8;m+=2}else if(dr>=9){d+=3}else{d-=9;m-=7}
+   if(s.pri.includes('lp')){d+=6;n+=5;m+=1}
+   if(s.pri.includes('ev')){n+=4;d+=3;m+=2}
+   if(s.pri.includes('xe')){m+=6;staff+=60}
+   if(s.pri.includes('mp')){d+=3;n+=1}
+   if(s.team==='el'){d+=4;m+=3;staff+=20}
+   if(s.team==='dc'){d+=7;n+=3;staff+=15}
+   if(s.team==='ch'){m+=1;staff+=5}
+   return[
+    {l:'Market share',v:clip(m)+'%',raw:clip(m),d:showDelta(m,prev.m),c:m>=38?'good':m>=33?'warn':'bad'},
+    {l:'Rider NPS',v:''+clip(n),raw:clip(n),d:showDelta(n,prev.n),c:n>=60?'good':n>=52?'warn':'bad'},
+    {l:'Driver NPS',v:''+clip(d),raw:clip(d),d:showDelta(d,prev.d),c:d>=55?'good':d>=46?'warn':'bad'},
+    {l:'Staff',v:staff.toLocaleString(),raw:staff,d:'+'+(staff-prev.staff),c:'good'}
+   ]
+  },
+  cons:(s,prev)=>{
+   const dr=s.alloc.dr||0;const r=[];
+   r.push(dr>=14
+    ?{i:'✓',t:"Bolt's counter-offer and driver loyalty programme outperformed Uber's 0% play. 81% of targeted drivers stayed."}
+    :{i:'!',t:"Bolt lost 1,400+ drivers in Bangkok and Berlin during Uber's campaign window. Recovery will take 2 quarters."});
+   if(s.pri.includes('lp'))r.push({i:'✓',t:"Bolt's insurance and earnings tools cited in driver forums as the key reason for staying. Hard to copy."});
+   if(s.pri.includes('ev'))r.push({i:'✓',t:'SEA EV fleet grew 60%. Cost-per-ride fell 11%, strengthening driver margins without commission cuts.'});
+   if(s.team==='dc')r.push({i:'✓',t:"Driver council members became organic advocates on social media, countering Uber's narrative."});
+   if(s.team==='el')r.push({i:'✓',t:'Regional leads responded within 48 hours in both Thailand and Germany — well within Uber\'s reaction window.'});
+   r.push({i:'→',t:'Entering Year 3: Growth markets are surging. The question is whether you have the people and systems to capture the moment.'});
+   return r
+  },
+  principleScore:(s)=>{
+   let p=[0,0,0,0,0];
+   const addPri=(pid)=>{const pri=RD[1].priorities.find(x=>x.id===pid);if(pri)pri.principles.forEach((v,i)=>p[i]+=v)};
+   const addTeam=(tid)=>{const t=RD[1].team.find(x=>x.id===tid);if(t)t.principles.forEach((v,i)=>p[i]+=v)};
+   s.pri.forEach(addPri);addTeam(s.team);
+   const dr=s.alloc.dr||0;
+   if(dr>=14){p[2]+=2;p[0]+=1}else if(dr<=6){p[3]+=1;p[2]-=1}
+   return p.map(v=>Math.min(Math.max(v,0),6))
+  }
+ },
+ {
+  outcomes:(s,prev)=>{
+   let m=prev.m,n=prev.n,d=prev.d,staff=prev.staff;
+   const gm=s.alloc.gm||0;
+   if(gm>=14){m+=9;n+=3}else if(gm>=9){m+=4;n+=1}else{m+=1}
+   if(s.pri.includes('bp')){m+=4;d+=3;n+=3}
+   if(s.pri.includes('ll')){d+=6;n+=5;staff+=100}
+   if(s.pri.includes('dl')){n+=6;m+=4}
+   if(s.pri.includes('ag')){m+=6;staff+=80}
+   if(s.team==='oa'){d+=8;n+=4;staff+=60}
+   if(s.team==='pw'){d+=4;n+=2}
+   if(s.team==='eh'){m+=3;staff+=40}
+   return[
+    {l:'Market share',v:clip(m)+'%',raw:clip(m),d:showDelta(m,prev.m),c:m>=46?'good':m>=38?'warn':'bad'},
+    {l:'Rider NPS',v:''+clip(n),raw:clip(n),d:showDelta(n,prev.n),c:n>=65?'good':n>=55?'warn':'bad'},
+    {l:'Driver NPS',v:''+clip(d),raw:clip(d),d:showDelta(d,prev.d),c:d>=60?'good':d>=50?'warn':'bad'},
+    {l:'Staff',v:staff.toLocaleString(),raw:staff,d:'+'+(staff-prev.staff),c:'good'}
+   ]
+  },
+  cons:(s,prev)=>{
+   const gm=s.alloc.gm||0;const r=[];
+   r.push(gm>=14
+    ?{i:'✓',t:'Belgium, Norway and Azerbaijan fully resourced. Bolt holds top-2 position in all three by year-end.'}
+    :{i:'!',t:'Growth markets underserved — inDrive and local players captured early-mover advantage in Norway and Belgium.'});
+   if(s.pri.includes('dl'))r.push({i:'✓',t:'Demand forecasting upgrade reduced surge-related rider drop-off by 23%. NPS gains driven by reliability.'});
+   if(s.pri.includes('ll'))r.push({i:'✓',t:'Internal pipeline now has 22 Ops leads ready for senior roles. Succession risk reduced significantly.'});
+   if(s.team==='oa')r.push({i:'✓',t:'Bolt Ops Academy launched with first cohort of 45. Seen as a key retention and culture tool company-wide.'});
+   r.push({i:'★',t:'Simulation complete. Your 3-year scorecard reflects the cumulative impact of every budget, strategy and people decision.'});
+   return r
+  },
+  principleScore:(s)=>{
+   let p=[0,0,0,0,0];
+   const addPri=(pid)=>{const pri=RD[2].priorities.find(x=>x.id===pid);if(pri)pri.principles.forEach((v,i)=>p[i]+=v)};
+   const addTeam=(tid)=>{const t=RD[2].team.find(x=>x.id===tid);if(t)t.principles.forEach((v,i)=>p[i]+=v)};
+   s.pri.forEach(addPri);addTeam(s.team);
+   const gm=s.alloc.gm||0;
+   if(gm>=14){p[0]+=1;p[4]+=1}
+   return p.map(v=>Math.min(Math.max(v,0),6))
+  }
+ }
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let cur=1,teamName='',sels={};
+let scores={m:34,n:54,d:49,staff:500};
+let budgets=[20,20,20];
+let allPrincipleScores=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function clip(v){return Math.min(Math.max(Math.round(v),0),99)}
+function showDelta(a,b){const d=Math.round(a-b);return(d>=0?'+':'')+d}
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function checkTeamName(){const v=document.getElementById('team-name-input').value.trim();document.getElementById('start-btn').disabled=v.length<2}
+function beginSim(){teamName=document.getElementById('team-name-input').value.trim();document.getElementById('brief-team-badge').textContent=teamName;go('s-brief')}
+
+function calcBudget(year){
+  // Year 1 always 40. Year 2+ modulates by performance delta
+  if(year===1)return 20;
+  const prev=year===2?{m:34,n:54,d:49}:null;
+  // use actual scores from end of prev year
+  const mDelta=scores.m-(year===2?34:scores.m); // simplified: compare to baseline
+  // Budget range: 30-50M based on market share trend
+  let base=RD[year-1].baseBudget;
+  if(year===2){
+   const mEnd1=sels[1]?getOutcomeRaw(1,'m'):34;
+   if(mEnd1>=40)base=25;else if(mEnd1>=36)base=22;else if(mEnd1>=32)base=18;else base=15;
+  }
+  if(year===3){
+   const mEnd2=sels[2]?getOutcomeRaw(2,'m'):34;
+   if(mEnd2>=44)base=28;else if(mEnd2>=38)base=24;else if(mEnd2>=34)base=20;else base=16;
+  }
+  return base;
+}
+function getOutcomeRaw(yr,key){
+  if(!sels[yr])return 34;
+  const prev=yr===1?{m:34,n:54,d:49,staff:500}:{m:scores.m,n:scores.n,d:scores.d,staff:scores.staff};
+  const outcomes=CALC[yr-1].outcomes(sels[yr],prev);
+  const map={m:0,n:1,d:2,staff:3};
+  return outcomes[map[key]]?outcomes[map[key]].raw:34;
+}
+
+function getPriorityCost(roundIdx,pid){
+  const p=RD[roundIdx].priorities.find(x=>x.id===pid);
+  return p?p.cost:0;
+}
+function getTeamCost(roundIdx,tid){
+  const t=RD[roundIdx].team.find(x=>x.id===tid);
+  return t?t.cost:0;
+}
+
+function getTotalSpent(){
+  const n=cur-1;
+  const budget=budgets[n];
+  const allocated=Object.values(sels[cur].alloc).reduce((a,b)=>a+b,0);
+  const priCost=sels[cur].pri.reduce((a,pid)=>a+getPriorityCost(n,pid),0);
+  const teamCost=sels[cur].team?getTeamCost(n,sels[cur].team):0;
+  return{allocated,priCost,teamCost,total:allocated+priCost+teamCost,budget}
+}
+
+// ─── RENDER ROUND ─────────────────────────────────────────────────────────────
+function startRound(n){
+  cur=n;
+  sels[n]={alloc:{},pri:[],team:null};
+  const rd=RD[n-1];
+  const budget=calcBudget(n);
+  budgets[n-1]=budget;
+
+  document.getElementById('rh-b').textContent=rd.badge;
+  document.getElementById('rh-t').textContent=rd.title;
+  document.getElementById('rh-team').textContent=teamName;
+  document.getElementById('sc-m').textContent=scores.m+'%';
+  document.getElementById('sc-n').textContent=scores.n;
+  document.getElementById('sc-d').textContent=scores.d;
+  document.getElementById('sc-s').textContent=scores.staff.toLocaleString();
+  document.getElementById('sc-budget').textContent='€'+budget+'M';
+  document.getElementById('bmax-label').textContent='€'+budget+'M';
+
+  const sc=rd.scenario;
+  document.getElementById('scard').className='scard '+(sc.type||'');
+  const stag=document.getElementById('stag');
+  stag.className='stag '+(sc.type||'');
+  stag.textContent=sc.tag;
+  document.getElementById('sh').textContent=sc.h;
+  document.getElementById('sb2').textContent=sc.b;
+  document.getElementById('errmsg').textContent='';
+
+  renderPri(rd);
+  renderTeam(rd);
+  renderBudget(rd,budget);
+  go('s-round');
+}
+
+function renderBudget(rd,budget){
+  rd.budget.forEach(i=>sels[cur].alloc[i.id]=0);
+  document.getElementById('arows').innerHTML=rd.budget.map(item=>`
+   <div class="ar">
+    <div class="al">${item.label}</div>
+    <input type="range" class="aslider" min="0" max="${budget}" step="1" value="0" data-id="${item.id}" oninput="updateAlloc(this)">
+    <div class="av" id="av-${item.id}">€0M</div>
+   </div>`).join('');
+  refreshBudgetUI();
+}
+
+function updateAlloc(el){
+  sels[cur].alloc[el.dataset.id]=parseInt(el.value);
+  document.getElementById('av-'+el.dataset.id).textContent='€'+el.value+'M';
+  refreshBudgetUI();
+}
+
+function refreshBudgetUI(){
+  const {allocated,priCost,teamCost,total,budget}=getTotalSpent();
+  const remaining=budget-total;
+  document.getElementById('btotal').textContent='€'+total+'M';
+  const rem=document.getElementById('brem-inline');
+  if(total>budget){rem.textContent='€'+total+'M allocated — OVER BUDGET by €'+(total-budget)+'M';rem.className='budget-avail over'}
+  else if(remaining===0){rem.textContent='€'+total+'M of €'+budget+'M — fully allocated';rem.className='budget-avail exact'}
+  else{rem.textContent='€'+total+'M of €'+budget+'M allocated — €'+remaining+'M remaining (incl. priority & team costs)';rem.className='budget-avail'}
+  refreshBar();
+}
+
+function refreshBar(){
+  const rd=RD[cur-1];
+  const alloc=sels[cur].alloc;
+  const budget=budgets[cur-1];
+  document.getElementById('bbar').innerHTML=rd.budget.map(item=>{
+   const v=alloc[item.id]||0;
+   return`<div class="bseg" style="flex:${Math.max(v,0.2)};background:${item.color}">${v>3?'€'+v+'M':''}</div>`
+  }).join('');
+}
+
+function renderPri(rd){
+  document.getElementById('pgrid').innerHTML=rd.priorities.map(p=>`
+   <div class="pc" id="pc-${p.id}" onclick="togglePri('${p.id}')">
+    <div class="pck" id="pck-${p.id}">&#10003;</div>
+    <div class="pt">${p.title}</div>
+    <div class="pd">${p.desc}</div>
+    <div class="pcost affordable" id="pcost-${p.id}">Cost: €${p.cost}M from budget</div>
+   </div>`).join('');
+}
+
+function togglePri(id){
+  const sel=sels[cur].pri;
+  const card=document.getElementById('pc-'+id);
+  if(sel.includes(id)){sel.splice(sel.indexOf(id),1);card.classList.remove('sel')}
+  else{if(sel.length>=2){const old=sel.shift();document.getElementById('pc-'+old).classList.remove('sel')}
+   sel.push(id);card.classList.add('sel')}
+  refreshBudgetUI();
+  document.getElementById('errmsg').textContent='';
+}
+
+function renderTeam(rd){
+  document.getElementById('tgrid').innerHTML=rd.team.map(tc=>`
+   <div class="tc" id="tc-${tc.id}" onclick="selectTeam('${tc.id}')">
+    <div class="trad" id="tr-${tc.id}"></div>
+    <div>
+     <div class="tt">${tc.title}</div>
+     <div class="td">${tc.desc}</div>
+     <div class="tcost">Cost: €${tc.cost}M from budget</div>
+    </div>
+   </div>`).join('');
+}
+
+function selectTeam(id){
+  RD[cur-1].team.forEach(tc=>document.getElementById('tc-'+tc.id).classList.remove('sel'));
+  document.getElementById('tc-'+id).classList.add('sel');
+  sels[cur].team=id;
+  refreshBudgetUI();
+  document.getElementById('errmsg').textContent='';
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+function submitYearToSheet(silent){
+  const data={
+    team:teamName, year:cur,
+    m:scores.m, n:scores.n, d:scores.d, staff:scores.staff,
+    y1m:cur>=1?scores.m:null, y2m:cur>=2?scores.m:null, y3m:cur>=3?scores.m:null,
+    y3n:cur>=3?scores.n:null, y3d:cur>=3?scores.d:null,
+    overall:cur>=3?Math.round((scores.m/99*50)+(scores.n/99*25)+(scores.d/99*25)):null,
+    ts:Date.now()
+  };
+  const status=document.getElementById('yr-sheet-status');
+  const btn=document.getElementById('yr-sheet-btn');
+  if(SHEET_WEBHOOK==='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
+    if(!silent&&status)status.textContent='No webhook set up — share scores with your facilitator directly.';
+    return;
+  }
+  if(!silent&&btn){btn.disabled=true;btn.textContent='Submitting...';}
+  fetch(SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(()=>{
+      if(!silent&&status){status.textContent='Year '+cur+' scores submitted to leaderboard.';btn.textContent='Submitted ✓';}
+      else if(silent&&status){status.textContent='Scores auto-submitted to leaderboard.';}
+    })
+    .catch(()=>{
+      if(!silent&&btn){status.textContent='Could not reach server — enter scores manually in facilitator view.';btn.disabled=false;btn.textContent='Retry →';}
+    });
+}
+
+function submitRound(){
+  const s=sels[cur];
+  const {total,budget}=getTotalSpent();
+  const err=document.getElementById('errmsg');
+  if(total>budget){err.textContent='Total spend (€'+total+'M) exceeds your budget (€'+budget+'M). Adjust sliders, priorities or team choice.';return}
+  if(s.pri.length<2){err.textContent='Please select 2 strategic priorities.';return}
+  if(!s.team){err.textContent='Please make a team & culture decision.';return}
+  err.textContent='';
+
+  const n=cur-1;
+  const prev={m:scores.m,n:scores.n,d:scores.d,staff:scores.staff};
+  const outcomes=CALC[n].outcomes(s,prev);
+  const cons=CALC[n].cons(s,prev);
+  const pScore=CALC[n].principleScore(s);
+  allPrincipleScores[n]=pScore;
+
+  scores={m:outcomes[0].raw,n:outcomes[1].raw,d:outcomes[2].raw,staff:outcomes[3].raw};
+
+  document.getElementById('res-tag').textContent='Year '+cur+' results';
+  document.getElementById('res-title').textContent=cur===3?'3-year term complete':cur===2?'Resilience tested':'Year in review';
+  document.getElementById('res-team-label').textContent='Team: '+teamName;
+  document.getElementById('ocgrid').innerHTML=outcomes.map(o=>`
+   <div class="oc"><div class="ocl">${o.l}</div><div class="ocv ${o.c}">${o.v}</div><div class="ocd">${o.d}</div></div>`).join('');
+  document.getElementById('clist').innerHTML=cons.map(c=>`
+   <div class="ci"><div class="cii">${c.i}</div><div class="cit">${c.t}</div></div>`).join('');
+
+  const nb=document.getElementById('nxtbtn');
+  if(cur<3){nb.textContent='Continue to Year '+(cur+1)+' →';nb.onclick=()=>startRound(cur+1)}
+  else{nb.textContent='View final scorecard →';nb.onclick=()=>showFinal()}
+  // Update submit box for this year
+  document.getElementById('yr-submit-label').textContent=cur;
+  document.getElementById('yr-sheet-status').textContent='';
+  document.getElementById('yr-sheet-btn').disabled=false;
+  document.getElementById('yr-sheet-btn').textContent='Submit Year '+cur+' scores to leaderboard →';
+  go('s-results');
+  // Defer auto-submit until after DOM is shown
+  setTimeout(()=>submitYearToSheet(true),100);
+}
+
+// ─── FINAL SCREEN ─────────────────────────────────────────────────────────────
+function showFinal(){
+  const m=scores.m,n=scores.n,d=scores.d;
+  const overall=Math.round((m/99*50)+(n/99*25)+(d/99*25));
+
+  // Principle totals across all 3 years
+  const totalP=PRINCIPLES.map((_,i)=>allPrincipleScores.reduce((a,yr)=>a+(yr[i]||0),0));
+  const maxP=18; // max 6 per year per principle
+
+  const tier=overall>=74?'Exceptional leadership':overall>=62?'Strong performance':overall>=50?'Solid foundations':'Development opportunity';
+  const emoji=overall>=74?'⚡':overall>=62?'★':overall>=50?'◆':'▲';
+
+  document.getElementById('ftitle').textContent=tier;
+  document.getElementById('fbadge').textContent=emoji;
+  document.getElementById('final-team-label').textContent='Team: '+teamName;
+  document.getElementById('fsub').textContent='Overall score: '+overall+'/100 · Team: '+teamName;
+
+  const gc=overall>=70?'#1a8a3c':overall>=50?'#c97a00':'#d03030';
+  document.getElementById('fscores').innerHTML=`
+   <div class="stitle" style="margin-bottom:8px;font-size:10px">Business performance</div>
+   <div class="fsr"><div class="fsl">Market share (final)</div><div class="fsbt"><div class="fsbf" style="width:${m}%"></div></div><div class="fsv" style="color:${m>=42?'#1a8a3c':m>=34?'#c97a00':'#d03030'}">${m}%</div></div>
+   <div class="fsr"><div class="fsl">Rider NPS (final)</div><div class="fsbt"><div class="fsbf" style="width:${n}%;background:#f0a500"></div></div><div class="fsv" style="color:#c97a00">${n}</div></div>
+   <div class="fsr"><div class="fsl">Driver NPS (final)</div><div class="fsbt"><div class="fsbf" style="width:${d}%;background:#378add"></div></div><div class="fsv" style="color:#1a5fa8">${d}</div></div>
+   <div class="fsr"><div class="fsl" style="font-weight:700">Overall score</div><div class="fsbt"><div class="fsbf" style="width:${overall}%;background:${gc}"></div></div><div class="fsv" style="color:${gc};font-size:15px">${overall}</div></div>`;
+
+  document.getElementById('principles-grid').innerHTML=PRINCIPLES.map((p,i)=>{
+   const raw=totalP[i];
+   const pct=Math.round((raw/maxP)*100);
+   const col=PRINCIPLE_COLORS[i];
+   return`<div class="principle-card">
+    <div class="principle-name" style="color:${col}">${p}</div>
+    <div class="principle-bar"><div class="principle-fill" style="width:${pct}%;background:${col}"></div></div>
+    <div class="principle-score">${pct}/100</div>
+   </div>`}).join('');
+
+
+
+  // Build score code
+  const scoreData={team:teamName,y1m:sels[1]?getOutcomeRaw(1,'m'):34,y2m:sels[2]?getOutcomeRaw(2,'m'):34,y3m:m,y3n:n,y3d:d,overall,ts:Date.now()};
+  const code=btoa(JSON.stringify(scoreData));
+  document.getElementById('score-code').textContent=code.substring(0,40)+'...';
+  document.getElementById('score-code').dataset.full=code;
+  go('s-final');
+}
+
+function submitToSheet(){
+  const code=document.getElementById('score-code').dataset.full;
+  const data=JSON.parse(atob(code));
+  const status=document.getElementById('sheet-status');
+  const btn=document.getElementById('sheet-btn');
+  btn.disabled=true;
+  btn.textContent='Submitting...';
+  if(SHEET_WEBHOOK==='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
+   status.textContent='No webhook configured — give the score code above to your facilitator to enter manually.';
+   btn.textContent='Submit score to leaderboard →';
+   btn.disabled=false;
+   return;
+  }
+  fetch(SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+   .then(()=>{status.textContent='Score submitted! Your facilitator\'s leaderboard will update shortly.';btn.textContent='Submitted ✓'})
+   .catch(()=>{status.textContent='Could not reach server. Give the code above to your facilitator.';btn.disabled=false;btn.textContent='Retry'});
+}
+
+function reset(){
+  cur=1;sels={};scores={m:34,n:54,d:49,staff:500};
+  budgets=[20,20,20];allPrincipleScores=[[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+  go('s-intro');
+}
+</script>
+</body>
+</html>
