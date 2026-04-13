@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bolt: The Next Ride — Facilitator View</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,14 +24,14 @@ header{background:#000;border-bottom:2px solid var(--green);padding:16px 28px;di
 .badge{background:var(--green);color:#000;font-size:11px;font-weight:700;font-family:var(--fm);padding:4px 10px;border-radius:4px;letter-spacing:.08em}
 .refresh-btn{background:transparent;color:var(--green);border:1px solid var(--green);border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;font-family:var(--fh);cursor:pointer;transition:background .15s}
 .refresh-btn:hover{background:rgba(29,185,84,.12)}
-.last-update{font-size:12px;font-family:var(--fm);color:var(--muted)}
+.last-update{font-size:12px;font-family:var(--fm);color:#aaa}
 main{padding:28px;max-width:1200px;margin:0 auto}
 .section-title{font-size:11px;font-weight:600;letter-spacing:.18em;color:#0F6E56;text-transform:uppercase;font-family:var(--fm);margin-bottom:16px}
 
 /* leaderboard */
 .leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:32px}
-.lb-header{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;background:#111111;padding:10px 16px;border-bottom:1px solid var(--border)}
-.lb-header div{font-size:11px;font-family:var(--fm);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.lb-header{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;background:#f2f2f0;padding:10px 16px;border-bottom:1px solid var(--border)}
+.lb-header div{font-size:11px;font-family:var(--fm);color:#444;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
 .lb-row{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;padding:14px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s}
 .lb-row:last-child{border-bottom:none}
 .lb-row:hover{background:rgba(0,0,0,.02)}
@@ -79,7 +82,7 @@ main{padding:28px;max-width:1200px;margin:0 auto}
 .clear-btn{background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--fh);cursor:pointer}
 .clear-btn:hover{background:rgba(224,80,80,.1)}
 
-.empty-state{padding:48px 24px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:14px}
+.empty-state{padding:48px 24px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:14px;background:var(--surface)}
 .config-note{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:14px 16px;font-size:12px;font-family:var(--fm);color:var(--muted);line-height:1.7;margin-bottom:20px}
 .config-note code{background:#000;color:var(--green);padding:1px 6px;border-radius:3px}
 </style>
@@ -91,6 +94,7 @@ main{padding:28px;max-width:1200px;margin:0 auto}
     <div class="badge" id="team-count">0 teams</div>
     <div class="last-update" id="last-update">Not yet loaded</div>
     <button class="refresh-btn" onclick="loadSheet()">Refresh leaderboard</button>
+    <button class="refresh-btn" style="border-color:#e05050;color:#e05050" onclick="clearAndReload()">Clear cache &amp; reload</button>
     <a href="index.html" style="font-size:12px;color:var(--muted);font-family:var(--fm);text-decoration:none;border-bottom:1px solid #333;padding-bottom:1px">← Sim</a>
   </div>
 </header>
@@ -143,10 +147,11 @@ main{padding:28px;max-width:1200px;margin:0 auto}
 const SHEET_READ_URL = 'https://script.google.com/macros/s/AKfycbz_D4H8Yn2jSF6XtFNutZ7FNwgsJeNdQ3rWegzOYzZVqXboGagwQVS594qH5L_IUuVu7g/exec';
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let teams = JSON.parse(localStorage.getItem('bolt_teams') || '[]');
+let teams = []; // always load fresh from sheet on page load
 let currentView = 'overall';
 
 function save(){localStorage.setItem('bolt_teams',JSON.stringify(teams))}
+function clearAndReload(){teams=[];localStorage.removeItem('bolt_teams');loadSheet();}
 
 // ─── LOAD FROM SHEET ──────────────────────────────────────────────────────────
 function loadSheet(){
@@ -176,7 +181,7 @@ function loadSheet(){
         // ts from sheet is a formatted string — store as-is for display, parse safely
         ex.tsRaw=t.ts||ex.tsRaw||null;
       });
-      // Rebuild teams array from sheet data (source of truth)
+      // Sheet is always the source of truth — replace local cache entirely
       teams=Object.values(fresh);
       save();
     }
