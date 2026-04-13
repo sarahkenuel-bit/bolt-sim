@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolt: The Next Ride — Facilitator View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1DB954;--bg:#0a0a0a;--surface:#111;--card:#1a1a1a;
+  --border:rgba(255,255,255,0.09);--text:#f0f0f0;--muted:#888;
+  --danger:#e05050;--warn:#f0a500;--info:#378add;
+  --fh:'Syne',sans-serif;--fm:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fh);min-height:100vh}
+header{background:#000;border-bottom:2px solid var(--green);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:10}
+.logo{font-size:18px;font-weight:800;color:#fff}.logo span{color:var(--green)}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.badge{background:var(--green);color:#000;font-size:11px;font-weight:700;font-family:var(--fm);padding:4px 10px;border-radius:4px;letter-spacing:.08em}
+.refresh-btn{background:transparent;color:var(--green);border:1px solid var(--green);border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;font-family:var(--fh);cursor:pointer;transition:background .15s}
+.refresh-btn:hover{background:rgba(29,185,84,.12)}
+.last-update{font-size:12px;font-family:var(--fm);color:var(--muted)}
+main{padding:28px;max-width:1200px;margin:0 auto}
+.section-title{font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--green);text-transform:uppercase;font-family:var(--fm);margin-bottom:16px}
+
+/* leaderboard */
+.leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:32px}
+.lb-header{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;background:#0d0d0d;padding:10px 16px;border-bottom:1px solid var(--border)}
+.lb-header div{font-size:11px;font-family:var(--fm);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.lb-row{display:grid;grid-template-columns:40px 1fr 90px 90px 90px 90px 90px;gap:0;padding:14px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:rgba(255,255,255,.02)}
+.lb-row.winner{background:rgba(29,185,84,.05);border-left:3px solid var(--green)}
+.rank{font-size:18px;font-weight:800;color:var(--muted);font-family:var(--fm);text-align:center}
+.rank.gold{color:#f5c842}
+.rank.silver{color:#c0c0c0}
+.rank.bronze{color:#cd7f32}
+.team-name{font-size:16px;font-weight:700;color:#fff}
+.team-sub{font-size:11px;font-family:var(--fm);color:var(--muted);margin-top:2px}
+.metric{text-align:center;font-family:var(--fm)}
+.metric .val{font-size:16px;font-weight:700}
+.metric .delta{font-size:11px;color:var(--muted);margin-top:2px}
+.good{color:var(--green)}
+.warn{color:var(--warn)}
+.bad{color:var(--danger)}
+
+/* year tabs */
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;font-family:var(--fh);color:var(--muted);cursor:pointer;transition:all .15s}
+.tab.active,.tab:hover{background:var(--green);color:#000;border-color:var(--green)}
+
+/* score card grid */
+.team-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:32px}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.tc-name{font-size:15px;font-weight:700;margin-bottom:12px;color:#fff}
+.tc-score-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.tc-score-row:last-child{border-bottom:none}
+.tc-label{font-size:11px;font-family:var(--fm);color:var(--muted)}
+.tc-val{font-size:14px;font-weight:700;font-family:var(--fm)}
+
+/* winner banner */
+.winner-banner{background:linear-gradient(135deg,#0d1a0f,#0a0a0a);border:2px solid var(--green);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:32px;display:none}
+.winner-banner.show{display:block}
+.wb-label{font-size:11px;letter-spacing:.2em;color:var(--green);font-family:var(--fm);text-transform:uppercase;margin-bottom:10px}
+.wb-team{font-size:36px;font-weight:800;color:#fff}
+.wb-score{font-size:16px;font-family:var(--fm);color:var(--green);margin-top:6px}
+.wb-emoji{font-size:48px;margin-bottom:10px}
+
+/* manual entry */
+.manual-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px}
+.manual-box p{font-size:13px;font-family:var(--fm);color:var(--muted);margin-bottom:14px}
+.manual-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:end}
+.mfield label{font-size:11px;font-family:var(--fm);color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;display:block}
+.mfield input{width:100%;background:#111;border:1px solid #333;border-radius:6px;padding:9px 11px;font-size:13px;font-family:var(--fm);color:#fff;outline:none;transition:border-color .15s}
+.mfield input:focus{border-color:var(--green)}
+.add-btn{background:var(--green);color:#000;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;font-family:var(--fh);cursor:pointer;height:38px}
+.clear-btn{background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--fh);cursor:pointer}
+.clear-btn:hover{background:rgba(224,80,80,.1)}
+
+.empty-state{padding:48px 24px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:14px}
+.config-note{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:14px 16px;font-size:12px;font-family:var(--fm);color:var(--muted);line-height:1.7;margin-bottom:20px}
+.config-note code{background:#000;color:var(--green);padding:1px 6px;border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Bolt <span>The Next Ride</span> — Facilitator</div>
+  <div class="header-right">
+    <div class="badge" id="team-count">0 teams</div>
+    <div class="last-update" id="last-update">Not yet loaded</div>
+    <button class="refresh-btn" onclick="loadSheet()">Refresh leaderboard</button>
+    <a href="index.html" style="font-size:12px;color:var(--muted);font-family:var(--fm);text-decoration:none;border-bottom:1px solid #333;padding-bottom:1px">← Sim</a>
+  </div>
+</header>
+
+<main>
+  <div class="config-note">
+    <strong style="color:#fff">Setup:</strong> Paste your Google Apps Script URL into both <code>SHEET_WEBHOOK</code> in <code>index.html</code> and <code>SHEET_READ_URL</code> in <code>facilitator.html</code>. Teams can also enter scores manually below.
+  </div>
+
+  <div id="winner-banner" class="winner-banner">
+    <div class="wb-emoji">&#9889;</div>
+    <div class="wb-label">Overall winner — Year 3</div>
+    <div class="wb-team" id="winner-name">—</div>
+    <div class="wb-score" id="winner-score">Score: —/100</div>
+  </div>
+
+  <div class="section-title">Live leaderboard</div>
+  <div class="tabs">
+    <div class="tab active" onclick="setView('overall')">Overall</div>
+    <div class="tab" onclick="setView('y1')">Year 1</div>
+    <div class="tab" onclick="setView('y2')">Year 2</div>
+    <div class="tab" onclick="setView('y3')">Year 3</div>
+  </div>
+  <div class="leaderboard" id="leaderboard-table">
+    <div class="empty-state">No team scores loaded yet. Teams can submit via the sim, or enter manually below.</div>
+  </div>
+
+  <div class="section-title">Manual score entry</div>
+  <div class="manual-box">
+    <p>If teams can't auto-submit, enter their final scores here. Ask each team to read out their Year 3 market share, Rider NPS, Driver NPS, and overall score from their final scorecard screen.</p>
+    <div class="manual-grid" style="grid-template-columns:1fr 80px 1fr 1fr 1fr 1fr auto">
+      <div class="mfield"><label>Team name</label><input type="text" id="m-team" placeholder="Team Lagos"></div>
+      <div class="mfield"><label>Year</label><select id="m-yr" style="width:100%;background:#111;border:1px solid #333;border-radius:6px;padding:9px 8px;font-size:13px;font-family:var(--fm);color:#fff;outline:none"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select></div>
+      <div class="mfield"><label>Market %</label><input type="number" id="m-mkt" placeholder="42" min="0" max="99"></div>
+      <div class="mfield"><label>Rider NPS</label><input type="number" id="m-nps" placeholder="67" min="0" max="99"></div>
+      <div class="mfield"><label>Driver NPS</label><input type="number" id="m-drv" placeholder="62" min="0" max="99"></div>
+      <div class="mfield"><label>Overall /100</label><input type="number" id="m-overall" placeholder="68" min="0" max="100"></div>
+      <button class="add-btn" onclick="addManual()">Add</button>
+    </div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end">
+      <button class="clear-btn" onclick="clearAll()">Clear all teams</button>
+    </div>
+  </div>
+
+  <div class="section-title">Team scorecards</div>
+  <div class="team-cards" id="team-cards">
+    <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:13px">No teams yet.</div>
+  </div>
+</main>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// Paste your Google Apps Script READ URL here (different endpoint to the write URL):
+const SHEET_READ_URL = 'https://script.google.com/macros/s/AKfycbz_D4H8Yn2jSF6XtFNutZ7FNwgsJeNdQ3rWegzOYzZVqXboGagwQVS594qH5L_IUuVu7g/exec';
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let teams = JSON.parse(localStorage.getItem('bolt_teams') || '[]');
+let currentView = 'overall';
+
+function save(){localStorage.setItem('bolt_teams',JSON.stringify(teams))}
+
+// ─── LOAD FROM SHEET ──────────────────────────────────────────────────────────
+function loadSheet(){
+  document.getElementById('last-update').textContent='Loading...';
+  fetch(SHEET_READ_URL,{redirect:'follow'})
+   .then(r=>r.text())
+   .then(text=>{
+    let data;
+    try{data=JSON.parse(text);}
+    catch(e){
+      document.getElementById('last-update').textContent='Bad response — check Apps Script deployment';
+      console.error('Sheet response:',text.substring(0,300));
+      render();return;
+    }
+    if(data&&data.teams){
+      const fresh={};
+      data.teams.forEach(t=>{
+        const name=t.team;
+        if(!fresh[name])fresh[name]={team:name,year:0};
+        const ex=fresh[name];
+        const yr=parseInt(t.year)||1;
+        // Sheet sends m/n/d keyed by year — map to y1m/y2m/y3m etc
+        if(yr===1){ex.y1m=parseInt(t.m)||null;ex.y1n=parseInt(t.n)||null;ex.y1d=parseInt(t.d)||null;}
+        if(yr===2){ex.y2m=parseInt(t.m)||null;ex.y2n=parseInt(t.n)||null;ex.y2d=parseInt(t.d)||null;}
+        if(yr===3){ex.y3m=parseInt(t.m)||null;ex.y3n=parseInt(t.n)||null;ex.y3d=parseInt(t.d)||null;ex.overall=parseInt(t.overall)||null;}
+        ex.year=Math.max(ex.year,yr);
+        // ts from sheet is a formatted string — store as-is for display, parse safely
+        ex.tsRaw=t.ts||ex.tsRaw||null;
+      });
+      // Rebuild teams array from sheet data (source of truth)
+      teams=Object.values(fresh);
+      save();
+    }
+    const count=data&&data.teams?data.teams.length:0;
+    document.getElementById('last-update').textContent='Updated '+new Date().toLocaleTimeString()+' ('+count+' rows)';
+    render();
+   })
+   .catch(err=>{
+    document.getElementById('last-update').textContent='Fetch failed — see console for details';
+    console.error('loadSheet error:',err);
+    render();
+   });
+}
+
+// ─── MANUAL ENTRY ─────────────────────────────────────────────────────────────
+function addManual(){
+  const name=document.getElementById('m-team').value.trim();
+  const mkt=parseInt(document.getElementById('m-mkt').value)||0;
+  const nps=parseInt(document.getElementById('m-nps').value)||0;
+  const drv=parseInt(document.getElementById('m-drv').value)||0;
+  const overall=parseInt(document.getElementById('m-overall').value)||Math.round((mkt/99*50)+(nps/99*25)+(drv/99*25));
+  if(!name){alert('Please enter a team name');return}
+  const yr=parseInt(document.getElementById('m-yr').value)||3;
+  const entry={team:name,year:yr,ts:Date.now()};
+  if(yr===1){entry.y1m=mkt;entry.y1n=nps;entry.y1d=drv;}
+  else if(yr===2){entry.y2m=mkt;entry.y2n=nps;entry.y2d=drv;}
+  else{entry.y3m=mkt;entry.y3n=nps;entry.y3d=drv;entry.overall=overall;}
+  const existing=teams.findIndex(x=>x.team===name);
+  if(existing>=0)teams[existing]=entry;else teams.push(entry);
+  save();
+  ['m-team','m-mkt','m-nps','m-drv','m-overall'].forEach(id=>document.getElementById(id).value='');
+  render();
+}
+
+function clearAll(){if(confirm('Clear all team scores?')){teams=[];save();render()}}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function setView(v){
+  currentView=v;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function render(){
+  document.getElementById('team-count').textContent=teams.length+' team'+(teams.length!==1?'s':'');
+  renderLeaderboard();
+  renderCards();
+  renderWinner();
+}
+
+function getYearData(t,yr){
+  if(yr==='y1')return{m:t.y1m,n:t.y1n,d:t.y1d,sortVal:t.y1m||0};
+  if(yr==='y2')return{m:t.y2m,n:t.y2n,d:t.y2d,sortVal:t.y2m||0};
+  if(yr==='y3')return{m:t.y3m,n:t.y3n,d:t.y3d,sortVal:t.y3m||0};
+  return{m:t.y3m,n:t.y3n,d:t.y3d,sortVal:t.overall||t.y3m||0,overall:t.overall};
+}
+
+function renderLeaderboard(){
+  const el=document.getElementById('leaderboard-table');
+  if(!teams.length){el.innerHTML='<div class="empty-state">No team scores loaded yet. Teams can submit via the sim, or enter manually above.</div>';return}
+
+  const v=currentView;
+  const isOverall=v==='overall';
+  const sorted=[...teams].sort((a,b)=>getYearData(b,v).sortVal-getYearData(a,v).sortVal);
+  const yearLabel=v==='y1'?'Year 1':v==='y2'?'Year 2':v==='y3'?'Year 3':'Overall';
+  const mThresh=v==='y1'?[36,32]:v==='y2'?[38,33]:[42,34];
+
+  el.innerHTML=`
+   <div class="lb-header" style="grid-template-columns:40px 1fr 90px 90px 90px ${isOverall?'90px ':''} 90px">
+    <div>#</div><div>Team</div>
+    <div style="text-align:center">Market %</div>
+    <div style="text-align:center">Rider NPS</div>
+    <div style="text-align:center">Driver NPS</div>
+    ${isOverall?'<div style="text-align:center">Overall</div>':''}
+    <div style="text-align:center">Updated</div>
+   </div>
+   `+sorted.map((t,i)=>{
+    const yd=getYearData(t,v);
+    const hasData=yd.m||yd.n||yd.d;
+    const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const mClass=yd.m>=mThresh[0]?'good':yd.m>=mThresh[1]?'warn':'bad';
+    const nClass=yd.n>=62?'good':yd.n>=52?'warn':'bad';
+    const dClass=yd.d>=55?'good':yd.d>=45?'warn':'bad';
+    const oClass=yd.overall>=65?'good':yd.overall>=50?'warn':'bad';
+    const time=t.tsRaw?String(t.tsRaw).substring(0,17):'—';
+    const yearTag=t.year?`<div class="team-sub">up to Year ${t.year}</div>`:'';
+    return`<div class="lb-row${i===0&&hasData?' winner':''}" style="grid-template-columns:40px 1fr 90px 90px 90px ${isOverall?'90px ':''} 90px">
+     <div class="rank ${rankClass}">${hasData?i+1:'—'}</div>
+     <div><div class="team-name">${t.team}</div>${yearTag}</div>
+     <div class="metric"><div class="val ${mClass}">${yd.m?yd.m+'%':'—'}</div></div>
+     <div class="metric"><div class="val ${nClass}">${yd.n||'—'}</div></div>
+     <div class="metric"><div class="val ${dClass}">${yd.d||'—'}</div></div>
+     ${isOverall?`<div class="metric"><div class="val ${oClass}" style="font-size:20px">${yd.overall||'—'}</div></div>`:''}
+     <div class="metric"><div class="val" style="color:var(--muted);font-size:13px">${time}</div></div>
+    </div>`
+  }).join('');
+}
+
+function renderCards(){
+  const el=document.getElementById('team-cards');
+  if(!teams.length){el.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-family:var(--fm);font-size:13px">No teams yet.</div>';return}
+  el.innerHTML=teams.map(t=>{
+   const oClass=t.overall>=65?'#1DB954':t.overall>=50?'#f0a500':'#e05050';
+   return`<div class="team-card">
+    <div class="tc-name">${t.team}</div>
+    <div class="tc-score-row"><div class="tc-label">Market share</div><div class="tc-val" style="color:${t.y3m>=42?'#1DB954':t.y3m>=34?'#f0a500':'#e05050'}">${t.y3m||'—'}%</div></div>
+    <div class="tc-score-row"><div class="tc-label">Rider NPS</div><div class="tc-val" style="color:#f0a500">${t.y3n||'—'}</div></div>
+    <div class="tc-score-row"><div class="tc-label">Driver NPS</div><div class="tc-val" style="color:#378add">${t.y3d||'—'}</div></div>
+    <div class="tc-score-row"><div class="tc-label">Overall score</div><div class="tc-val" style="color:${oClass};font-size:18px">${t.overall||'—'}</div></div>
+   </div>`
+  }).join('');
+}
+
+function renderWinner(){
+  if(!teams.length){document.getElementById('winner-banner').classList.remove('show');return}
+  const winner=teams.reduce((a,b)=>(b.overall||b.y3m||b.y2m||b.y1m||0)>(a.overall||a.y3m||a.y2m||a.y1m||0)?b:a,teams[0]);
+  document.getElementById('winner-banner').classList.add('show');
+  document.getElementById('winner-name').textContent=winner.team;
+  document.getElementById('winner-score').textContent=winner.overall?'Score: '+winner.overall+'/100':'Year '+winner.year+' in progress';
+}
+
+// Auto-refresh every 30 seconds if sheet configured
+setInterval(()=>{if(SHEET_READ_URL!=='YOUR_GOOGLE_APPS_SCRIPT_READ_URL_HERE')loadSheet()},30000);
+loadSheet();
+</script>
+</body>
+</html>
