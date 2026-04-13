@@ -154,37 +154,45 @@ function save(){localStorage.setItem('bolt_teams',JSON.stringify(teams))}
 
 // ─── LOAD FROM SHEET ──────────────────────────────────────────────────────────
 function loadSheet(){
-  if(SHEET_READ_URL==='YOUR_GOOGLE_APPS_SCRIPT_READ_URL_HERE'){
-    document.getElementById('last-update').textContent='No sheet URL — using manual entry only';
-    render();return;
-  }
-  fetch(SHEET_READ_URL)
-   .then(r=>r.json())
-   .then(data=>{
-    if(data&&data.teams){
-     data.teams.forEach(t=>{
-      const existing=teams.findIndex(x=>x.team===t.team);
-      if(existing>=0){
-       // Merge year snapshots — preserve best data for each year
-       const ex=teams[existing];
-       if(t.year===1||!t.year){ex.y1m=t.m||ex.y1m;ex.y1n=t.n||ex.y1n;ex.y1d=t.d||ex.y1d;}
-       if(t.year===2){ex.y2m=t.m||ex.y2m;ex.y2n=t.n||ex.y2n;ex.y2d=t.d||ex.y2d;}
-       if(t.year===3){ex.y3m=t.y3m||t.m||ex.y3m;ex.y3n=t.y3n||t.n||ex.y3n;ex.y3d=t.y3d||t.d||ex.y3d;ex.overall=t.overall||ex.overall;}
-       ex.ts=t.ts||ex.ts;ex.year=Math.max(ex.year||0,t.year||0);
-      }else{
-       const entry={team:t.team,year:t.year||1,ts:t.ts};
-       if(t.year===1||!t.year){entry.y1m=t.m;entry.y1n=t.n;entry.y1d=t.d;}
-       if(t.year===2){entry.y1m=entry.y1m||null;entry.y2m=t.m;entry.y2n=t.n;entry.y2d=t.d;}
-       if(t.year===3){entry.y3m=t.y3m||t.m;entry.y3n=t.y3n||t.n;entry.y3d=t.y3d||t.d;entry.overall=t.overall;}
-       teams.push(entry);
-      }
-     });
-     save();
+  document.getElementById('last-update').textContent='Loading...';
+  fetch(SHEET_READ_URL,{redirect:'follow'})
+   .then(r=>r.text())
+   .then(text=>{
+    let data;
+    try{data=JSON.parse(text);}
+    catch(e){
+      document.getElementById('last-update').textContent='Bad response — check Apps Script deployment';
+      console.error('Sheet response:',text.substring(0,300));
+      render();return;
     }
-    document.getElementById('last-update').textContent='Updated '+new Date().toLocaleTimeString();
+    if(data&&data.teams){
+      const fresh={};
+      data.teams.forEach(t=>{
+        const name=t.team;
+        if(!fresh[name])fresh[name]={team:name,year:0};
+        const ex=fresh[name];
+        const yr=parseInt(t.year)||1;
+        // Sheet sends m/n/d keyed by year — map to y1m/y2m/y3m etc
+        if(yr===1){ex.y1m=parseInt(t.m)||null;ex.y1n=parseInt(t.n)||null;ex.y1d=parseInt(t.d)||null;}
+        if(yr===2){ex.y2m=parseInt(t.m)||null;ex.y2n=parseInt(t.n)||null;ex.y2d=parseInt(t.d)||null;}
+        if(yr===3){ex.y3m=parseInt(t.m)||null;ex.y3n=parseInt(t.n)||null;ex.y3d=parseInt(t.d)||null;ex.overall=parseInt(t.overall)||null;}
+        ex.year=Math.max(ex.year,yr);
+        // ts from sheet is a formatted string — store as-is for display, parse safely
+        ex.tsRaw=t.ts||ex.tsRaw||null;
+      });
+      // Rebuild teams array from sheet data (source of truth)
+      teams=Object.values(fresh);
+      save();
+    }
+    const count=data&&data.teams?data.teams.length:0;
+    document.getElementById('last-update').textContent='Updated '+new Date().toLocaleTimeString()+' ('+count+' rows)';
     render();
    })
-   .catch(()=>{document.getElementById('last-update').textContent='Could not reach sheet — showing manual data';render()});
+   .catch(err=>{
+    document.getElementById('last-update').textContent='Fetch failed — see console for details';
+    console.error('loadSheet error:',err);
+    render();
+   });
 }
 
 // ─── MANUAL ENTRY ─────────────────────────────────────────────────────────────
@@ -258,7 +266,7 @@ function renderLeaderboard(){
     const nClass=yd.n>=62?'good':yd.n>=52?'warn':'bad';
     const dClass=yd.d>=55?'good':yd.d>=45?'warn':'bad';
     const oClass=yd.overall>=65?'good':yd.overall>=50?'warn':'bad';
-    const time=t.ts?new Date(t.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—';
+    const time=t.tsRaw?String(t.tsRaw).substring(0,17):'—';
     const yearTag=t.year?`<div class="team-sub">up to Year ${t.year}</div>`:'';
     return`<div class="lb-row${i===0&&hasData?' winner':''}" style="grid-template-columns:40px 1fr 90px 90px 90px ${isOverall?'90px ':''} 90px">
      <div class="rank ${rankClass}">${hasData?i+1:'—'}</div>
@@ -289,10 +297,10 @@ function renderCards(){
 
 function renderWinner(){
   if(!teams.length){document.getElementById('winner-banner').classList.remove('show');return}
-  const winner=teams.reduce((a,b)=>b.overall>a.overall?b:a,teams[0]);
+  const winner=teams.reduce((a,b)=>(b.overall||b.y3m||b.y2m||b.y1m||0)>(a.overall||a.y3m||a.y2m||a.y1m||0)?b:a,teams[0]);
   document.getElementById('winner-banner').classList.add('show');
   document.getElementById('winner-name').textContent=winner.team;
-  document.getElementById('winner-score').textContent='Score: '+winner.overall+'/100';
+  document.getElementById('winner-score').textContent=winner.overall?'Score: '+winner.overall+'/100':'Year '+winner.year+' in progress';
 }
 
 // Auto-refresh every 30 seconds if sheet configured
